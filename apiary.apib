@@ -1,0 +1,380 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# NanoGrid
+
+Nanogrid API v 0.1
+
+Conventions
+-----
+
++ Date formatting uses RFC3339 nano format (2006-01-02T15:04:05.999999999Z07:00)
++ Attribute _ticks_ denotes time in ticks [1 tick = 100 nanos] (https://msdn.microsoft.com/en-us/library/system.datetime.ticks\(v=vs.110\).aspx)
+
+
+## Data Structures
+
+### Version (object)
++ major: 1 (number, required)
++ minor: 1 (number, required)
++ patch: 1 (number, required)
++ extension: RC1 (string, optional)
+
+### TaskConfiguration (object)
++ image: ntx4:2.0.1 (string, required) - docker image
++ cmd: /bin/bash (string,optional) - command to run (cannot be set with args)
++ args (array[string])
+    - run
+    - L
+    - trace
++ cpus: 0.5 (number, required)
++ mem: 1024 (number, required)
++ port: 7777 (number, required)
++ env (object) - docker environment variables
+    - TASK_ID: 25
++ labels (object) - docker labels
+    - VERSION:  2.0.1
+  
+
+### FullTaskConfiguration (TaskConfiguration)
++ name: ntx4 (string, required)
++ version (Version, required)
++ created:  `2016-03-08T06:17:48.227896671Z` (string) -  RFC3339 nano format
+
+
+## Group Task Repository
+
+Task repository provides api for task configurations. 
+
+**Task configuration**
+
+Represents blueprint that can be scheduled by NanoGrid schedulers. 
+Each configuration has unique _name:version_ identifier that represents immutable blueprint.
+Methods for deleting and upsert (when doing reinsert with different configuration) should be used with caution. 
+
+Versions must follow [Semantic Versioning 2.0.0](http://semver.org/)
+
+### Tasks [/tasks]
+
+### List [GET]
+
+List task names
+
++ Response 200 (application/json)
+    + Attributes
+         + names (array[string])
+            - ntx4
+            - reverse-proxy
+
+### Task versions [/tasks/{name}]
++ Parameters
+    + name: ntx4 (string)
+
+### List [GET]
+
+List task versions
+
++ Response 200 (application/json)
+    + Attributes
+         + versions (array[Version])
+
+
+### Task configuration [/tasks/{name}/{version}]
+
++ Parameters
+    + name: ntx4 (string)
+    + version: 2.0.0(string)
+
+
+### Get [GET]
+
++ Response 200 (application/json)
+    + Attributes (FullTaskConfiguration)
+
+
+### Upsert [POST]
+
+Should be used only as immutable insert with possible retry in production (eventual consistency by default).
+Allows update to support retry operation and testing puproses.
+
++ Request (application/json)
+    + Attributes (TaskConfiguration)
+
++ Response 200
+
+### Delete [DELETE]
+
++ Response 200
+
+## Data Structures
+
+### TaskDescriptor
++ name: nginx (string,required)
++ version: 1.8.1 (string, required)
+
+### SchedulerTaskTimeInfo
++ created: `2016-04-12T18:22:23.454561444Z` (string, required)
++ scheduled: `2016-04-12T18:23:23.454561444Z` (string, required)
++ started: `2016-04-12T18:23:23.854561444Z` (string, required)
+
+### SchedulerTask
++ taskId: `e14820ed-3ded-40b2-9587-0602bb5221d1` (string, required)
++ allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string, required)
++ location: `http://192.168.55.242:31000` (string, required)
++ lastPing: `2016-04-12T18:22:23.45456313Z` (string, required)
++ config (TaskConfiguration, required)
++ timeInfo (SchedulerTaskTimeInfo, required)
+
+
+
+## Group Task Scheduler
+
+### Allocators [/allocators]
+
+### List Allocators IDs [GET]
+
++ Response 200 (application/json)
+    + Attributes
+      + allocators (array[string])
+          - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
+
+
+### Allocator Tasks [/allocators/{allocatorId}/tasks]
++ Parameters
+    + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+
+### List Tasks [GET]
+
++ Response 200 (application/json)
+    + Attributes
+      + tasks (array[SchedulerTask])
+
+
+### Schedule Task [POST]
++ Request (application/json)
+    + Attributes (TaskDescriptor)
+
++ Response 201 (application/json)
+    + Attributes
+      + id: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
+
+### Kill Allocator [DELETE]
+
++ Response 200 (application/json)
+    + Attributes
+      + found: true (boolean, required)
+
++ Response 404 (application/json)
+    + Attributes
+      + found: false (boolean, required)
+
+
+### Allocator Task [/allocators/{allocatorId}/tasks/{taskId}]
++ Parameters
+    + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + taskId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    
+### Get Task [GET]
+
++ Response 200 (application/json)
+    + Attributes
+      + found: true (boolean, required)
+      + ready: true (boolean, required)
+      + task (SchedulerTask, required)
+
++ Response 404 (application/json)
+    + Attributes
+      + found: false (boolean, required)
+  
+### Kill Task [DELETE]
+
++ Response 200 (application/json)
+    + Attributes
+      + found: true (boolean, required)
+
+
++ Response 404 (application/json)
+    + Attributes
+      + found: false (boolean, required)
+
+
+### Allocator Ping [/allocators/{allocatorId}/tasks/ping]
+
+Every allocator musr periodically ping with list of active task ids to avoid task GC after inactive interval
+
+
+### Ping [POST]
+
++ Request (application/json)
+    + Attributes
+        + tasks (array[string],required)
+            - `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
+
++ Response 204
+
+## Data Structures
+
+### Ticks (number) - Time in ticks
+
+### Timestamp
++ ticks: 0 (number)
++ date:  2016-02-21T18:06:43.0000000Z (string) 
+
+### Execution
++ partitions: 1 (number, optional) - number of tasks
++ executors: 1 (number, required) - max concurrency (max number of tasks that can run in parallel)
+
+### Manifest (object)
++ template: http://myhost/259/$START$/$DURATION$/offline.ism/manifest.mpd (string, required)
++ start (Timestamp, required)
++ end (Timestamp, required)
+
+### LiveStream (object)
++ manifest (Manifest,required)
++ maxDelay (Timestamp, optional) - allows arbitrary delay when not set
+
+### OfflineStream (object)
++ manifest (Manifest,required)
+
+### PlanState (object)
++ state (enum)
+    - STATE_WAITING
+    - STATE_RUNNING
+    - STATE_COMPLETED
+    - STATE_FAILED
++ reason: no free resources (string, optional)
++ started:  `2016-02-21T18:06:43.0000000Z` (string, required)
++ completed (string, optional)
+
+
+### StreamSource
++ live (LiveStream, optional)
++ offline (OfflineStream, optional)
++ execution (Execution, required)
+
+### Plan
++ id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string) - UUIDv4 key
++ state (PlanState, required)
++ source (StreamSource, required)
+
+### EventTimestamp
++ type (enum, required)
+    - ts
+    - rts
+    - flush
+
++ val (Ticks, required)
+
+### EventLabel
++ type (enum, required)
+    - item
+    - plus
++ val (Ticks, required)
+
+### EventData
++ type (enum, required)
+    - audio
++ val (string, required) - Base64 encoded binary data
+
+### Event
++ type: label (string, required)
++ lookahead: false (boolean, required)
++ timestamp (EventTimestamp, optional)
++ date (EventData, optional)
++ label (EventLabel, optional)
+
+### EventWithOffset
++ offset: 255 (Ticks,required)
++ event (Event, required)
+
+### RecoverableEventWithOffset
++ streamId: ct24 (string,required)
++ publisherId: publisher1 (string,required)
++ event (EventWithOffset,required)
++ recoveryOffset: 258 (Ticks,required)
+
+
+## Group Speech Recognition
+
+NanoGrid applications.
+
+Streams
+-----
+
++ Stream is represented by stream id _SID_. 
+    + SIDs can be reused
+    + Multiple non-overlapping tasks can be run for single SID
+    + Results are fetched based on SID
+
+
+Timestamps structures contains ticks or date (date attribute takes precendence).
+
+
+### Streams [/speech/streams/{streamId}]
++ Parameters
+    + streamId: ct24 (string)
+
+
+### List plans [GET]
+
++ Response 200 (application/json)
+    + Attributes (array[Plan])
+
+    
+### Delete [DELETE]    
+
+Remove all data associated with stream
+
++ Response 202  
+
+
+### Add source [PUT]
+
+Creates new plan from given source
+
++ Request (application/json)
+    + Attributes (StreamSource)
+
++ Response 201
+    + Attributes
+        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required) - planId
+        
++ Response 409
+
+### Stream Plan [/speech/streams/{streamId}/plan/{planId}]
++ Parameters
+    + streamId: ct24 (string)
+    + planId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required)
+
+### Get plan [GET]
+
++ Response 200 (application/json)
+    + Attributes (Plan)
+
+### Kill plan [DELETE]
+
+Does not remove existing output data
+
++ Response 202
+
++ Response 404
+
+
+## Group Speech Recognition Output
+
+### Streaming output [/speech/streams/{streamId}/output{?fromDate,toDate,fromTicks,toTicks,planId}]
+
++ Parameters
+    + streamId: ct24 (string)
+    + fromDate (optional)
+    + toDate (optional)
+    + fromTicks (optional)
+    + toTicks (optional)
+    + planId (optional)
+
+### Read [GET]
+
+Responds with chunked plain text reponse, on each line is one json serialized event (example of one such event is in response example)
+
++ Response 200 (application/json)
+    + Attributes (RecoverableEventWithOffset)
