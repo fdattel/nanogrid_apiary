@@ -118,9 +118,9 @@ Allows update to support retry operation and testing puproses.
 + started: `2016-04-12T18:23:23.854561444Z` (string, required)
 
 ### SchedulerTask
-+ taskId: `e14820ed-3ded-40b2-9587-0602bb5221d1` (string, required)
++ id: `e14820ed-3ded-40b2-9587-0602bb5221d1` (string, required)
 + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string, required)
-+ location: `http://192.168.55.242:31000` (string, required)
++ endpoint: `http://192.168.55.242:31000` (string, required)
 + lastPing: `2016-04-12T18:22:23.45456313Z` (string, required)
 + config (TaskConfiguration, required)
 + timeInfo (SchedulerTaskTimeInfo, required)
@@ -138,8 +138,20 @@ Allows update to support retry operation and testing puproses.
       + allocators (array[string])
           - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
 
+### Allocator [/allocators/{allocatorId}]
+
+### Kill Allocator [DELETE]
+
++ Response 200 (application/json)
+    + Attributes
+      + found: true (boolean, required)
+
++ Response 404 (application/json)
+    + Attributes
+      + found: false (boolean, required)
 
 ### Allocator Tasks [/allocators/{allocatorId}/tasks]
+
 + Parameters
     + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
@@ -158,22 +170,13 @@ Allows update to support retry operation and testing puproses.
     + Attributes
       + id: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
 
-### Kill Allocator [DELETE]
-
-+ Response 200 (application/json)
-    + Attributes
-      + found: true (boolean, required)
-
-+ Response 404 (application/json)
-    + Attributes
-      + found: false (boolean, required)
-
 
 ### Allocator Task [/allocators/{allocatorId}/tasks/{taskId}]
 + Parameters
     + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + taskId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     
+
 ### Get Task [GET]
 
 + Response 200 (application/json)
@@ -186,6 +189,8 @@ Allows update to support retry operation and testing puproses.
     + Attributes
       + found: false (boolean, required)
   
+
+
 ### Kill Task [DELETE]
 
 + Response 200 (application/json)
@@ -211,6 +216,127 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
             - `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
 
 + Response 204
+
+
+## Data Structures
+
+### XMLDuration (string) - ISO 8601 XMLDuration 
+
+
+### Stream
++ id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
++ name: mystream (string,required)
++ created: `2016-04-12T18:22:23.45456313Z` (string, required)
++ tags (array[string],optional)
+    - test
+
+### AdaptationMimeType (enum)
+    - mp4/audio
+    - mp4/video
+
+
+### Representation (object)
+    - Properties
+        - One Of 
+            - AudioRepresentation
+            - VideoRepresentation
+
+### BaseRepresentation
++ id: 500kbps 360p (string, required)
++ codecs: mp4a.40.2 (string, required)
++ bandwidth: 512000 (number, required)
++ header: 9e107d9d372bb6826bd81d3542a419d6 - header MD5 (string, required)
+
+### AudioRepresentation (BaseRepresentation)
++ audioSamplingRate: 44100 (number, required)
+
+### VideoRepresentation (BaseRepresentation)
++ width: 720 (number, required)
++ height:  576 (number, required)
++ par: `16:9` (string, required)
++ sar: `64:45` (string, required)
++ frameRate: 25/1 (string, required)
+         
+
+### AdaptationSet
++ id: 720p (string, required)    
++ mimeType (AdaptationMimeType, required)
++ segmentAlignment: true (boolean, required)
++ startWithSAP: 1 (number, required)
++ lang: cze (string, optional)
++ representations (array[Representation], required)
+
+### Period
++ id: 1 (number,required)
++ streamId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
++ startTime: `2016-04-12T18:22:23.45456313Z` (string, required)
++ adaptationSets (array[AdaptationSet],required)
+
+
+### MPD
++ id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+
++ major: 1 (number, required)
++ minor: 1 (number, required)
++ patch: 1 (number, required)
++ extension: RC1 (string, optional)
+
+
+## Group Stream Server
+
+### Streams [/streams]
+
+### List streams [GET]
++ Response 201 (application/json)
+    + Attributes
+        + streams (array[Stream])
+            `  
+
+### Create [POST]
+
++ Request (application/json)
+    + Attributes
+        + name: mystream (string,required)
+        + tags (array[string],optional)
+
+
++ Response 201 (application/json)
+    + Attributes
+        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required) - planId
+
+### Delete [DELETE]
++ Response 204 (application/json)
+
+
+### Streams [/streams/{streamId}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    
+
+### List periods [GET]
++ Response 200 (application/json)
+    + Attributes
+        + periods (array[string])
+          - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`    
+
+### Stream Periods [/streams/{streamId}/periods]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+
+    
+### List periods [GET]
++ Response 200 (application/json)
+    + Attributes
+        + periods (array[string])
+          - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`    
+
+ 
+### Add period [PUT]
++ Request (application/json)
+    + Attributes
+        + period (Period) 
+
++ Response 201 (application/json)
 
 ## Data Structures
 
