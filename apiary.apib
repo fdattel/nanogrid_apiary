@@ -235,7 +235,7 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + mp4/video
 
 ### BaseRepresentation
-+ id: 500kbps 360p (string, required)
++ id: 500kbps (string, required)
 + codecs: mp4a.40.2 (string, required)
 + bandwidth: 512000 (number, required)
 + header: 9e107d9d372bb6826bd81d3542a419d6 - header MD5 (string, required)
@@ -296,7 +296,7 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + Response 204 (application/json)
 
 
-### Streams [/streams/{streamId}]
+### Stream [/streams/{streamId}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     
@@ -306,6 +306,21 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + Attributes
         + periods (array[string])
           - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`    
+
+### Stream MPD Manifest [/streams/{streamId}/manifest.mpd{?fromDate,toDate,fromTicks,toTicks,period}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + fromDate: `2016-04-12T18:22:23.45456313Z` (string,optional)
+    + toDate: `2016-04-12T18:22:23.45456313Z`  (string,optional)
+    + fromTicks:0  (Ticks,optional)
+    + toTicks: 10000000 (Ticks,optional)
+    + period: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,optional)
+
+
+### Get Manifest [GET]
++ Response 200 (application/xml)
+    + Body
+
 
 ### Stream Periods [/streams/{streamId}/periods]
 + Parameters
@@ -338,12 +353,46 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + Attributes (IdedPeriod)
 
 
-### Stream Period Manifest [/streams/{streamId}/periods/{periodId}/manifest]
+### Stream Chunk Peek [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/peek/{begin}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+    + adId: 720p (string)
+    + reprId: 512kbps (string)
+    + begin: 100000 (Ticks)
 
-### Get manifest [GET]
+### Read [GET]
++ Response 200 (application/octet-stream)
+    + Headers
+            
+            Duration: 10000000
+    + Body
+
+### Stream Chunk [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunk/{begin}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+    + adId: 720p (string)
+    + reprId: 512kbps (string)
+    + begin: 100000 (Ticks)
+
+
+### Read [GET]
++ Response 200 (application/octet-stream)
+    + Headers
+    
+            Duration: 10000000
+    + Body
+
+
+### Write [POST]
++ Request (application/octet-stream)
+    + Headers
+    
+            Duration: 10000000
+    + Body
 
 + Response 204
-
 
 
 ## Data Structures
