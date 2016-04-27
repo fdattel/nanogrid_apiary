@@ -231,15 +231,8 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     - test
 
 ### AdaptationMimeType (enum)
-    - mp4/audio
-    - mp4/video
-
-
-### Representation (object)
-    - Properties
-        - One Of 
-            - AudioRepresentation
-            - VideoRepresentation
++ mp4/audio
++ mp4/video
 
 ### BaseRepresentation
 + id: 500kbps 360p (string, required)
@@ -264,22 +257,16 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + segmentAlignment: true (boolean, required)
 + startWithSAP: 1 (number, required)
 + lang: cze (string, optional)
-+ representations (array[Representation], required)
++ representations (array,required)
+    - (AudioRepresentation)
+    - (VideoRepresentation)
 
 ### Period
 + id: 1 (number,required)
 + streamId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
 + startTime: `2016-04-12T18:22:23.45456313Z` (string, required)
 + adaptationSets (array[AdaptationSet],required)
-
-
-### MPD
-+ id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
-
-+ major: 1 (number, required)
-+ minor: 1 (number, required)
-+ patch: 1 (number, required)
-+ extension: RC1 (string, optional)
+ 
 
 
 ## Group Stream Server
