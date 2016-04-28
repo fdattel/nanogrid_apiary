@@ -222,7 +222,6 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 
 ### XMLDuration (string) - ISO 8601 XMLDuration 
 
-
 ### Stream
 + id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
 + name: mystream (string,required)
@@ -270,24 +269,33 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`  (string,required)
 + streamId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
 
+### Chunk
++ begin: 10000000 (number,required)
++ duration: 10000000 (number, required)
++ last: false (boolean, required)
 
 
 ## Group Stream Server
 
-### Streams [/streams]
+### Streams [/streams{?page,size}]
 
-### List streams [GET]
+
+### List [GET]
++ Parameters
+    + page: 0 (number)
+    + size: 100 (number)
 + Response 201 (application/json)
     + Attributes
         + streams (array[Stream])
+        + hasNext: false (boolean)
             `  
 
 ### Create [POST]
-
 + Request (application/json)
     + Attributes
         + name: mystream (string,required)
         + tags (array[string],optional)
+        + created: `2016-04-12T18:22:23.45456313Z` (string, optional)
 
 
 + Response 201 (application/json)
@@ -300,45 +308,52 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     
 
-### List periods [GET]
+### Get [GET]
 + Response 200 (application/json)
-    + Attributes
-        + periods (array[IdedPeriod])
+    + Attributes (Stream)
 
 
-
-### Delete stream [DELETE]
+### Delete [DELETE]
 + Response 204
 
 
-### Stream MPD Manifest [/streams/{streamId}/manifest.mpd{?fromDate,toDate,fromTicks,toTicks,period}]
+### Stream Manifest [/streams/{streamId}/{type}.mpd{?fromDate,toDate,fromTicks,toTicks,period}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + fromDate: `2016-04-12T18:22:23.45456313Z` (string,optional)
     + toDate: `2016-04-12T18:22:23.45456313Z`  (string,optional)
     + fromTicks:0  (Ticks,optional)
     + toTicks: 10000000 (Ticks,optional)
+    + type (enum)
+        - live (string)
+        - ondemand (string)
     + period: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,optional)
 
 
-### Get Manifest [GET]
+### Get [GET]
 + Response 200 (application/xml)
     + Body
 
 
-### Stream Periods [/streams/{streamId}/periods]
+### Stream Periods [/streams/{streamId}/periods{?page,size,filter}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
     
-### List periods [GET]
+### List [GET]
++ Parameters
+    + page: 0 (number)
+    + size: 100 (number)
+    + filter (enum)
+        - open (string)
+        - closed (string)
 + Response 200 (application/json)
     + Attributes
-        + periods (array[string])
-          - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`    
+        + periods (array[IdedPeriod])
+        + hasNext: false (boolean)
 
  
-### Add period [PUT]
+### Add [PUT]
 + Request (application/json)
     + Attributes (Period)
 
@@ -352,28 +367,30 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
 
-### Get period [GET]
+### Get [GET]
 + Response 200 (application/json)
     + Attributes (IdedPeriod)
 
-### Delete period [DELETE]
+### Delete [DELETE]
 + Response 204
 
 
-### Stream Chunk Peek [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/peek/{begin}]
+### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunks/{select}{?size}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
     + adId: 720p (string)
     + reprId: 512kbps (string)
-    + begin: 100000 (Ticks)
+    + select (enum)
+        - last (String) - size query parameter is forced to be 1
+        - begin: 100000 (Ticks)
+    + size: 50 (number, optional)
 
-### Read [GET]
-+ Response 200 (application/octet-stream)
-    + Headers
-            
-            Duration: 10000000
-    + Body
+### Select [GET]
++ Response 200 (application/json)
+    + Attributes 
+        - chunks (array[Chunk])
+
 
 ### Stream Chunk [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunk/{begin}]
 + Parameters
@@ -389,6 +406,7 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + Headers
     
             Duration: 10000000
+            Last: false
     + Body
 
 
@@ -397,10 +415,19 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + Headers
     
             Duration: 10000000
+            Last: true
     + Body
 
-+ Response 204
++ Response 200
 
+### Set Last [PUT]
++ Request (application/octet-stream)
+    + Headers
+    
+            Last: true
+    + Body
+
++ Response 200
 
 ## Data Structures
 
