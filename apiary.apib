@@ -262,13 +262,15 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     - (VideoRepresentation)
 
 ### Period
-+ startTime: `2016-04-12T18:22:23.45456313Z` (string, required)
++ started: `2016-04-12T18:22:23.45456313Z` (string, required)
++ closed: `2016-04-12T18:22:23.45456313Z` (string, optional)
 + adaptationSets (array[AdaptationSet],required)
 
- 
 ### IdedPeriod (Period)
 + id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`  (string,required)
 + streamId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
+
+
 
 ## Group Stream Server
 
@@ -290,10 +292,7 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 
 + Response 201 (application/json)
     + Attributes
-        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required) - planId
-
-### Delete [DELETE]
-+ Response 204 (application/json)
+        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required)
 
 
 ### Stream [/streams/{streamId}]
@@ -304,8 +303,13 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 ### List periods [GET]
 + Response 200 (application/json)
     + Attributes
-        + periods (array[string])
-          - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`    
+        + periods (array[IdedPeriod])
+
+
+
+### Delete stream [DELETE]
++ Response 204
+
 
 ### Stream MPD Manifest [/streams/{streamId}/manifest.mpd{?fromDate,toDate,fromTicks,toTicks,period}]
 + Parameters
@@ -351,6 +355,9 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 ### Get period [GET]
 + Response 200 (application/json)
     + Attributes (IdedPeriod)
+
+### Delete period [DELETE]
++ Response 204
 
 
 ### Stream Chunk Peek [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/peek/{begin}]
