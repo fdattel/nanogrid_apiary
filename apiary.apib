@@ -279,7 +279,6 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 
 ### Streams [/streams{?page,size}]
 
-
 ### List [GET]
 + Parameters
     + page: 0 (number)
@@ -301,6 +300,33 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + Response 201 (application/json)
     + Attributes
         + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required)
+
+### Headers [/headers]
+
+
+### Add [POST]
++ Request (application/octet-stream)
+    + Body
+    
+            <raw header data>
+
+
++ Response 201 (application/json)
+    + Attributes
+        + id: `9e107d9d372bb6826bd81d3542a419d6` (string,required) - header MD5
+
+
+### Header [/headers/{MD5}]
++ Parameters
+    + MD5: `9e107d9d372bb6826bd81d3542a419d6` (string)
+
+    
+### Get [GET]  
+
++ Response 200 (application/octet-stream)    
+    + Body
+    
+            <raw header data>
 
 
 ### Stream [/streams/{streamId}]
@@ -359,7 +385,7 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 
 + Response 201 (application/json)
     + Attributes
-        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required) - planId
+        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required)
 
 
 ### Stream Period [/streams/{streamId}/periods/{periodId}]
@@ -391,7 +417,6 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + Attributes 
         - chunks (array[Chunk])
 
-
 ### Stream Chunk [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunk/{begin}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
@@ -408,6 +433,8 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
             Duration: 10000000
             Last: false
     + Body
+    
+            <raw chunk data>
 
 
 ### Write [POST]
@@ -417,15 +444,19 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
             Duration: 10000000
             Last: true
     + Body
+    
+            <raw chunk data>
 
 + Response 200
 
 ### Set Last [PUT]
-+ Request (application/octet-stream)
++ Request (application/json)
     + Headers
     
             Last: true
     + Body
+          
+            
 
 + Response 200
 
