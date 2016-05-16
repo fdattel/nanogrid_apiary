@@ -12,7 +12,22 @@ Conventions
 + Attribute _ticks_ denotes time in ticks [1 tick = 100 nanos] (https://msdn.microsoft.com/en-us/library/system.datetime.ticks\(v=vs.110\).aspx)
 
 
+
+
 ## Data Structures
+
+### Ticks (number) - Time in ticks
+
+### Timestamp (enum)
++ ticks: 0 (number)
++ date:  `2016-02-21T18:06:43.0000000Z` (string) 
+
+### Error 
++ error: `error desc` (string,required)
+
+### NotFound 
++ found: false (boolean,required)
+
 
 ### Version (object)
 + major: 1 (number, required)
@@ -223,9 +238,9 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 ### XMLDuration (string) - ISO 8601 XMLDuration 
 
 ### Stream
-+ id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
++ id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,optional) - force id if specified
 + name: mystream (string,required)
-+ created: `2016-04-12T18:22:23.45456313Z` (string, required)
++ offset (Timestamp, required)
 + tags (array[string],optional)
     - test
 
@@ -248,7 +263,6 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + par: `16:9` (string, required)
 + sar: `64:45` (string, required)
 + frameRate: 25/1 (string, required)
-         
 
 ### AdaptationSet
 + id: 720p (string, required)    
@@ -261,18 +275,16 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     - (VideoRepresentation)
 
 ### Period
-+ started: `2016-04-12T18:22:23.45456313Z` (string, required)
-+ closed: `2016-04-12T18:22:23.45456313Z` (string, optional)
++ offset (Ticks, required) - offset in ticks to stream start time
++ closed: false (boolean, optional)
 + adaptationSets (array[AdaptationSet],required)
 
 ### IdedPeriod (Period)
 + id: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`  (string,required)
-+ streamId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
 
 ### Chunk
-+ begin: 10000000 (number,required)
++ offset: 10000000 (number,required)
 + duration: 10000000 (number, required)
-+ last: false (boolean, required)
 
 
 ## Group Stream Server
@@ -282,27 +294,30 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 ### List [GET]
 + Parameters
     + page: 0 (number)
-    + size: 100 (number)
-+ Response 201 (application/json)
-    + Attributes
-        + streams (array[Stream])
-        + hasNext: false (boolean)
-            `  
+    + size: 10 (number)
+    
++ Response 200 (application/json)
+    + Attributes (array[Stream])
+ `  
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
 ### Create [POST]
 + Request (application/json)
-    + Attributes
-        + name: mystream (string,required)
-        + tags (array[string],optional)
-        + created: `2016-04-12T18:22:23.45456313Z` (string, optional)
-
+    + Attributes (Stream)
 
 + Response 201 (application/json)
     + Attributes
-        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required)
+        + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+
++ Response 400 (application/json)
+    + Attributes (Error)
+
++ Response 409 (application/json)
+    + Attributes (Error)
+    
 
 ### Headers [/headers]
-
 
 ### Add [POST]
 + Request (application/octet-stream)
@@ -313,21 +328,22 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 
 + Response 201 (application/json)
     + Attributes
-        + id: `9e107d9d372bb6826bd81d3542a419d6` (string,required) - header MD5
+        + id: `9e107d9d372bb6826bd81d3542a419d6` (string)
 
 
-### Header [/headers/{MD5}]
+### Header [/headers/{id}]
 + Parameters
-    + MD5: `9e107d9d372bb6826bd81d3542a419d6` (string)
+    + id: `9e107d9d372bb6826bd81d3542a419d6` (string)
 
     
-### Get [GET]  
-
+### Get [GET]
 + Response 200 (application/octet-stream)    
     + Body
     
             <raw header data>
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
 ### Stream [/streams/{streamId}]
 + Parameters
@@ -338,30 +354,16 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + Response 200 (application/json)
     + Attributes (Stream)
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
 ### Delete [DELETE]
 + Response 204
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
-### Stream Manifest [/streams/{streamId}/{type}.mpd{?fromDate,toDate,fromTicks,toTicks,period}]
-+ Parameters
-    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
-    + fromDate: `2016-04-12T18:22:23.45456313Z` (string,optional)
-    + toDate: `2016-04-12T18:22:23.45456313Z`  (string,optional)
-    + fromTicks:0  (Ticks,optional)
-    + toTicks: 10000000 (Ticks,optional)
-    + type (enum)
-        - live (string)
-        - ondemand (string)
-    + period: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,optional)
-
-
-### Get [GET]
-+ Response 200 (application/xml)
-    + Body
-
-
-### Stream Periods [/streams/{streamId}/periods{?page,size,filter}]
+### Stream Periods [/streams/{streamId}/periods{?page,size,offset,reverse}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
@@ -370,16 +372,17 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + Parameters
     + page: 0 (number)
     + size: 100 (number)
-    + filter (enum)
-        - open (string)
-        - closed (string)
+    + offset: 0 (Ticks)
+    + reverse: true (boolean)
+
 + Response 200 (application/json)
-    + Attributes
-        + periods (array[IdedPeriod])
-        + hasNext: false (boolean)
+    + Attributes (array[IdedPeriod])
 
  
-### Add [PUT]
+### Append [POST]
+    
+Period can be appended only after all previous periods are closed and its offset must be greated than latest period offset (offset attribute)
+
 + Request (application/json)
     + Attributes (Period)
 
@@ -387,6 +390,14 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     + Attributes
         + id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string,required)
 
++ Response 400 (application/json)
+    + Attributes (Error)
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
++ Response 409 (application/json)
+    + Attributes (Error)
 
 ### Stream Period [/streams/{streamId}/periods/{periodId}]
 + Parameters
@@ -397,37 +408,126 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + Response 200 (application/json)
     + Attributes (IdedPeriod)
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
 ### Delete [DELETE]
 + Response 204
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
-### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunks/{select}{?size}]
+
+### Close Period [/streams/{streamId}/periods/{periodId}/close]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+
+### Close [POST]
+
++ Response 204
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
++ Response 409 (application/json)
+    + Attributes (Error)
+
+
+### Period Manifest [/streams/{streamId}/periods/{periodId}/{type}.mpd{?from,to,liveOffset}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+    + type (enum)
+        - live (string)
+        - ondemand (string)
+    + from (Timestamp, optional) - ondemand only
+    + to (Timestamp, optional) - ondemand only
+    + liveOffset (Timestamp, optional) - live only - shift meaning of live stream now to past (for live streaming of ondemand streams) 
+
+
+### Get [GET]
++ Response 200 (application/xml)
+    + Body
+
++ Response 400 (application/json)
+    + Attributes (Error)
+
++ Response 413 (application/json)
+    + Attributes
+        + maxAllowedDuration: 600000000 (Ticks) - max allowed manifest duration 
+    
++ Response 409 (application/json)
+    + Attributes (Error)    
+
++ Response 404
+
+
+### Period Adaptation Header [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/header]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+    + adId: 720p (string)
+
+
+### List [GET]
+
++ Response 200 (application/octet-stream)    
+    + Body
+    
+            <raw header data>
+
+### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunks{?page,size,offset,reverse}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
     + adId: 720p (string)
     + reprId: 512kbps (string)
-    + select (enum)
-        - last (String) - size query parameter is forced to be 1
-        - begin: 100000 (Ticks)
-    + size: 50 (number, optional)
+    + page: 0 (number)
+    + size: 10 (number)
+    + offset: 0 (Ticks)
+    + reverse: true (boolean)
 
-### Select [GET]
+### List [GET]
 + Response 200 (application/json)
-    + Attributes 
-        - chunks (array[Chunk])
+    + Attributes (array[Chunk])
 
-### Stream Chunk [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunk/{begin}]
+
+### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunks]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
     + adId: 720p (string)
     + reprId: 512kbps (string)
-    + begin: 100000 (Ticks)
 
+
+### Write [POST]
++ Request (application/octet-stream)
+
+    + Headers
+    
+            Offset: 10000
+            Duration: 10000000
+            Last: true
+            
+    + Body
+    
+            <raw chunk data>
+
++ Response 204
+
+
+### Stream Chunk [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunks/{offset}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+    + adId: 720p (string)
+    + reprId: 512kbps (string)
+    + offset: 100000 (Ticks)
 
 ### Read [GET]
 + Response 200 (application/octet-stream)
+
     + Headers
     
             Duration: 10000000
@@ -437,36 +537,9 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
             <raw chunk data>
 
 
-### Write [POST]
-+ Request (application/octet-stream)
-    + Headers
-    
-            Duration: 10000000
-            Last: true
-    + Body
-    
-            <raw chunk data>
 
-+ Response 200
-
-### Set Last [PUT]
-+ Request (application/json)
-    + Headers
-    
-            Last: true
-    + Body
-          
-            
-
-+ Response 200
 
 ## Data Structures
-
-### Ticks (number) - Time in ticks
-
-### Timestamp
-+ ticks: 0 (number)
-+ date:  2016-02-21T18:06:43.0000000Z (string) 
 
 ### Execution
 + partitions: 1 (number, optional) - number of tasks
