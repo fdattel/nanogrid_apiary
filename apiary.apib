@@ -90,8 +90,7 @@ List task names
 List task versions
 
 + Response 200 (application/json)
-    + Attributes
-         + versions (array[Version])
+    + Attributes (array[Version])
 
 
 ### Task configuration [/tasks/{name}/{version}]
@@ -115,11 +114,11 @@ Allows update to support retry operation and testing puproses.
 + Request (application/json)
     + Attributes (TaskConfiguration)
 
-+ Response 200
++ Response 204
 
 ### Delete [DELETE]
 
-+ Response 200
++ Response 204
 
 ## Data Structures
 
@@ -141,7 +140,6 @@ Allows update to support retry operation and testing puproses.
 + timeInfo (SchedulerTaskTimeInfo, required)
 
 
-
 ## Group Task Scheduler
 
 ### Allocators [/allocators]
@@ -149,32 +147,26 @@ Allows update to support retry operation and testing puproses.
 ### List Allocators IDs [GET]
 
 + Response 200 (application/json)
-    + Attributes
-      + allocators (array[string])
-          - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
+    + Attributes (array[string])
+       - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
 
 ### Allocator [/allocators/{allocatorId}]
 
 ### Kill Allocator [DELETE]
-
-+ Response 200 (application/json)
-    + Attributes
-      + found: true (boolean, required)
++ Response 204
 
 + Response 404 (application/json)
     + Attributes
       + found: false (boolean, required)
 
 ### Allocator Tasks [/allocators/{allocatorId}/tasks]
-
 + Parameters
     + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
 ### List Tasks [GET]
 
 + Response 200 (application/json)
-    + Attributes
-      + tasks (array[SchedulerTask])
+    + Attributes (array[SchedulerTask])
 
 
 ### Schedule Task [POST]
@@ -195,10 +187,12 @@ Allows update to support retry operation and testing puproses.
 ### Get Task [GET]
 
 + Response 200 (application/json)
-    + Attributes
-      + found: true (boolean, required)
-      + ready: true (boolean, required)
-      + task (SchedulerTask, required)
+    + Attributes (SchedulerTask)
+
++ Response 202 (application/json)
+    Task is not ready yet
+
+    + Attributes (SchedulerTask)
 
 + Response 404 (application/json)
     + Attributes
@@ -208,14 +202,11 @@ Allows update to support retry operation and testing puproses.
 
 ### Kill Task [DELETE]
 
-+ Response 200 (application/json)
-    + Attributes
-      + found: true (boolean, required)
-
++ Response 204
 
 + Response 404 (application/json)
     + Attributes
-      + found: false (boolean, required)
+        + found: false (boolean, required)
 
 
 ### Allocator Ping [/allocators/{allocatorId}/tasks/ping]
@@ -226,9 +217,8 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 ### Ping [POST]
 
 + Request (application/json)
-    + Attributes
-        + tasks (array[string],required)
-            - `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
+    + Attributes (array[string])
+        + `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
 
 + Response 204
 
