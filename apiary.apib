@@ -235,8 +235,8 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
     - test
 
 ### AdaptationMimeType (enum)
-+ mp4/audio
-+ mp4/video
++ audio/mp4
++ video/mp4
 
 ### BaseRepresentation
 + id: 500kbps (string, required)
@@ -443,10 +443,6 @@ Period can be appended only after all previous periods are closed and its offset
 + Response 400 (application/json)
     + Attributes (Error)
 
-+ Response 413 (application/json)
-    + Attributes
-        + maxAllowedDuration: 600000000 (Ticks) - max allowed manifest duration 
-    
 + Response 409 (application/json)
     + Attributes (Error)    
 
@@ -482,6 +478,13 @@ Period can be appended only after all previous periods are closed and its offset
 + Response 200 (application/json)
     + Attributes (array[Chunk])
 
++ Response 204
+    
+    Returned when there is no more content in selected direction (stream closed when reverse=false, before first chunk when reverse=true).
+    
+    + Body
+   
+
 
 ### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptation/{adId}/representation/{reprId}/chunks]
 + Parameters
@@ -498,7 +501,6 @@ Period can be appended only after all previous periods are closed and its offset
     
             Offset: 10000
             Duration: 10000000
-            Last: true
             
     + Body
     
@@ -521,7 +523,7 @@ Period can be appended only after all previous periods are closed and its offset
     + Headers
     
             Duration: 10000000
-            Last: false
+            
     + Body
     
             <raw chunk data>
