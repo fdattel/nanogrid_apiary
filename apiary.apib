@@ -12,8 +12,6 @@ Conventions
 + Attribute _ticks_ denotes time in ticks [1 tick = 100 nanos] (https://msdn.microsoft.com/en-us/library/system.datetime.ticks\(v=vs.110\).aspx)
 
 
-
-
 ## Data Structures
 
 ### Ticks (number) - Time in ticks
@@ -25,12 +23,9 @@ Conventions
 ### NotFound 
 + error: not found (string,required)
 
-
-### Version (object)
-+ major: 1 (number, required)
-+ minor: 1 (number, required)
-+ patch: 1 (number, required)
-+ extension: RC1 (string, optional)
+### TaskDescriptor
++ name: nginx (string,required)
++ version: 1.8.1 (string, required)
 
 ### TaskConfiguration (object)
 + image: ntx4:2.0.1 (string, required) - docker image
@@ -46,12 +41,8 @@ Conventions
     - TASK_ID: 25
 + labels (object) - docker labels
     - VERSION:  2.0.1
-  
-
-### FullTaskConfiguration (TaskConfiguration)
-+ name: ntx4 (string, required)
-+ version (Version, required)
-+ created:  `2016-03-08T06:17:48.227896671Z` (string) -  RFC3339 nano format
++ startupGracePeriod: 2000 (number,optional) after which period in millis  is started task expected to be ready 
++ created:  `2016-03-08T06:17:48.227896671Z` (string,optional) -  RFC3339 nano format
 
 
 ## Group Task Repository
@@ -84,24 +75,28 @@ List task names
 
 ### List [GET]
 
-List task versions
-
 + Response 200 (application/json)
-    + Attributes (array[Version])
+    + Attributes (array[string])
+        - 1.0.1
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
 
-### Task configuration [/tasks/{name}/{version}]
+### Task [/tasks/{name}/{version}]
 
 + Parameters
     + name: ntx4 (string)
-    + version: 2.0.0(string)
+    + version: 2.0.0 (string)
 
 
 ### Get [GET]
 
 + Response 200 (application/json)
-    + Attributes (FullTaskConfiguration)
+    + Attributes (TaskConfiguration)
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
 
 ### Upsert [POST]
 
@@ -113,15 +108,79 @@ Allows update to support retry operation and testing puproses.
 
 + Response 204
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+
 ### Delete [DELETE]
 
 + Response 204
 
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+### Groups [/groups]
+
+### List [GET]
+
++ Response 200 (application/json)
+    + Attributes
+         + names (array[string])
+            - ntx4
+            - reverse-proxy
+
+### Group versions [/groups/{name}]
++ Parameters
+    + name: ntx4 (string)
+
+### List [GET]
+
++ Response 200 (application/json)
+    + Attributes (array[string])
+        - 1.0.1
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+
+### Group [/groups/{name}/{version}]
+
++ Parameters
+    + name: ntx4 (string)
+    + version: 2.0.0 (string)
+
+
+### Get [GET]
++ Response 200 (application/json)
+    + Attributes (array[TaskDescriptor]))
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+### Upsert [POST]
+
+Should be used only as immutable insert with possible retry in production (eventual consistency by default).
+Allows update to support retry operation and testing puproses.
+
++ Request (application/json)
+    + Attributes (array[TaskDescriptor])
+
++ Response 204
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+
+### Delete [DELETE]
+
++ Response 204
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+
 ## Data Structures
 
-### TaskDescriptor
-+ name: nginx (string,required)
-+ version: 1.8.1 (string, required)
 
 ### SchedulerTaskTimeInfo
 + created: `2016-04-12T18:22:23.454561444Z` (string, required)
