@@ -27,10 +27,16 @@ Conventions
 + name: nginx (string,required)
 + version: 1.8.1 (string, required)
 
+### TaskDescriptorWithArgs (TaskDescriptor)
++ args (array[string],optional)
+    - run
++ env (object)
+    - ID: 2566 
+
 ### TaskConfiguration (object)
 + image: ntx4:2.0.1 (string, required) - docker image
-+ cmd: /bin/bash (string,optional) - command to run (cannot be set with args)
-+ args (array[string])
++ cmd: /bin/bash (string, optional) - (value in execlp(cmd, args(0), args(1), ...)))
++ args (array[string], optional) - (args in execlp(cmd, args(0), args(1), ...)))
     - run
     - L
     - trace
@@ -39,9 +45,8 @@ Conventions
 + port: 7777 (number, required)
 + env (object) - docker environment variables
     - TASK_ID: 25
-+ labels (object) - docker labels
++ parameters (object) - docker parameters
     - VERSION:  2.0.1
-+ startupGracePeriod: 2000 (number,optional) after which period in millis  is started task expected to be ready 
 + created:  `2016-03-08T06:17:48.227896671Z` (string,optional) -  RFC3339 nano format
 
 
@@ -189,7 +194,7 @@ Allows update to support retry operation and testing puproses.
 
 ### SchedulerTask
 + id: `e14820ed-3ded-40b2-9587-0602bb5221d1` (string, required)
-+ allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string, required)
++ clientId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string, required)
 + endpoint: `http://192.168.55.242:31000` (string, required)
 + lastPing: `2016-04-12T18:22:23.45456313Z` (string, required)
 + config (TaskConfiguration, required)
@@ -198,26 +203,26 @@ Allows update to support retry operation and testing puproses.
 
 ## Group Task Scheduler
 
-### Allocators [/allocators]
+### Clients [/clients]
 
-### List Allocators IDs [GET]
+### List client IDs [GET]
 
 + Response 200 (application/json)
     + Attributes (array[string])
        - `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2`
 
-### Allocator [/allocators/{allocatorId}]
+### Client [/clients/{clientId}]
 
-### Kill Allocator [DELETE]
+### Kill Client [DELETE]
 + Response 204
 
 + Response 404 (application/json)
     + Attributes
       + found: false (boolean, required)
 
-### Allocator Tasks [/allocators/{allocatorId}/tasks]
+### Client Tasks [/clients/{clientId}/tasks]
 + Parameters
-    + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + clientId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
 ### List Tasks [GET]
 
@@ -227,16 +232,16 @@ Allows update to support retry operation and testing puproses.
 
 ### Schedule Task [POST]
 + Request (application/json)
-    + Attributes (TaskDescriptor)
+    + Attributes (TaskDescriptorWithArgs)
 
 + Response 201 (application/json)
     + Attributes
       + id: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string,required)
 
 
-### Allocator Task [/allocators/{allocatorId}/tasks/{taskId}]
+### Client Task [/clients/{clientId}/tasks/{taskId}]
 + Parameters
-    + allocatorId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + clientId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + taskId: `d4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     
 
@@ -265,9 +270,9 @@ Allows update to support retry operation and testing puproses.
         + found: false (boolean, required)
 
 
-### Allocator Ping [/allocators/{allocatorId}/tasks/ping]
+### Client Ping [/clients/{clientId}/tasks/ping]
 
-Every allocator musr periodically ping with list of active task ids to avoid task GC after inactive interval
+Every client must periodically ping with list of active task ids to avoid task GC after inactive interval
 
 
 ### Ping [POST]
@@ -336,11 +341,11 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 
 ## Group Stream Server
 
-### Streams [/streams{?page,size}]
+### Streams [/streams{?size,offset}]
 
 ### List [GET]
 + Parameters
-    + page: 0 (number)
+    + offset: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string) - at which id to start (inclusive)
     + size: 10 (number)
     
 + Response 200 (application/json)
@@ -410,14 +415,13 @@ Every allocator musr periodically ping with list of active task ids to avoid tas
 + Response 404 (application/json)
     + Attributes (NotFound)
 
-### Stream Periods [/streams/{streamId}/periods{?page,size,offset,reverse}]
+### Stream Periods [/streams/{streamId}/periods{?size,offset,reverse}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
     
 ### List [GET]
 + Parameters
-    + page: 0 (number)
     + size: 100 (number)
     + offset: 0 (Ticks)
     + reverse: false (boolean)
@@ -522,13 +526,12 @@ Period can be appended only after all previous periods are closed and its offset
     
             <raw header data>
 
-### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptations/{adId}/representations/{reprId}/chunks{?page,size,offset,reverse}]
+### Stream Chunks [/streams/{streamId}/periods/{periodId}/adaptations/{adId}/representations/{reprId}/chunks{?size,offset,reverse}]
 + Parameters
     + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
     + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
     + adId: 720p (string)
     + reprId: 512kbps (string)
-    + page: 0 (number)
     + size: 10 (number)
     + offset: 0 (Ticks)
     + reverse: false (boolean)
@@ -570,6 +573,56 @@ Period can be appended only after all previous periods are closed and its offset
 
 
 ## Data Structures
+
+### Job
++ id: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string, required)
+
+### JobInputType (enum)
+- `stream-server`
+- `manifest`
+
+
+### InputDataFilter
++ begin: 0 (Ticks, optional)
++ duration: 250000000 (Ticks, optional)
+
+### StreamServerInput 
++ url : `http://localhost:8000` (string, required)
++ stream :  `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string, required)
++ period :  `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string, required)
++ adaptation: ad1 (string, required)
++ representation: rep1 (string, required)
++ filter (InputDataFilter, optional)
+
+### ManifestInput
++ template: `http://manifest:2345/$START$/$DURATION$` (string, required)
++ filter (InputDataFilter, required) 
+
+### JobInput
++ type (JobInputType)
++ stream-server (StreamServerInput)
++ manifest (ManifestInput)
+
+### JobOutputType (enum)
+- `cassandra`
+- `directory`
+
+### CassandraOutput
++ hosts: host1:port1,host2:port2 (string, required) - comma separated
++ keyspace: mykeyspace (string, required)
++ createKeyspaceIfNotExists: false (
+
+
+### JobOutput
++ type (JobOutputType)
+
+
+
+
+### JobRecoveryType (enum)
+- `none`
+- `directory`
+- `etcd`
 
 ### Execution
 + partitions: 1 (number, optional) - number of tasks
