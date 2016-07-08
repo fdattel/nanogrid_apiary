@@ -47,7 +47,7 @@ Conventions
     - TASK_ID: 25
 + parameters (object) - docker parameters
     - VERSION:  2.0.1
-+ created:  `2016-03-08T06:17:48.227896671Z` (string,optional) -  RFC3339 nano format
++ created:  `2016-03-08T06:17:48.227896671Z` (string, optional) -  RFC3339 nano format
 
 
 ## Group Task Repository
@@ -187,18 +187,32 @@ Allows update to support retry operation and testing puproses.
 ## Data Structures
 
 
-### SchedulerTaskTimeInfo
-+ created: `2016-04-12T18:22:23.454561444Z` (string, required)
-+ scheduled: `2016-04-12T18:23:23.454561444Z` (string, required)
-+ started: `2016-04-12T18:23:23.854561444Z` (string, required)
+
+### SchedulerTaskStateEnum (enum)
++ WAITING
++ SCHEDULED
++ STARTING
++ RUNNING
++ FINISHED
++ FAILED
+
+
+### SchedulerTaskState
++ state  (SchedulerTaskStateEnum, required)
++ created: `2016-06-21T11:54:56.0067776Z` (string, required)
++ scheduled: `2016-06-21T11:54:57.4966419Z` (string, required)
++ starting: `2016-06-21T11:54:58.4192082Z` (string, required)
++ started: `2016-06-21T11:54:59.4244968Z` (string, required)
++ completed: `0001-01-01T00:00:00Z` (string, required)
++ lastPing: `2016-06-21T11:54:56.0067776Z` (string, required)
+
 
 ### SchedulerTask
 + id: `e14820ed-3ded-40b2-9587-0602bb5221d1` (string, required)
 + clientId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string, required)
 + endpoint: `http://192.168.55.242:31000` (string, required)
-+ lastPing: `2016-04-12T18:22:23.45456313Z` (string, required)
-+ config (TaskConfiguration, required)
-+ timeInfo (SchedulerTaskTimeInfo, required)
++ state (SchedulerTaskState, required)
++ task (TaskConfiguration, required)
 
 
 ## Group Task Scheduler
@@ -217,15 +231,14 @@ Allows update to support retry operation and testing puproses.
 + Response 204
 
 + Response 404 (application/json)
-    + Attributes
-      + found: false (boolean, required)
+    + Attributes (NotFound)
+
 
 ### Client Tasks [/clients/{clientId}/tasks]
 + Parameters
     + clientId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
 
 ### List Tasks [GET]
-
 + Response 200 (application/json)
     + Attributes (array[SchedulerTask])
 
@@ -250,24 +263,16 @@ Allows update to support retry operation and testing puproses.
 + Response 200 (application/json)
     + Attributes (SchedulerTask)
 
-+ Response 202 (application/json)
-    Task is not ready yet
-
-    + Attributes (SchedulerTask)
-
 + Response 404 (application/json)
-    + Attributes
-      + found: false (boolean, required)
+    + Attributes (NotFound)
   
-
 
 ### Kill Task [DELETE]
 
 + Response 204
 
 + Response 404 (application/json)
-    + Attributes
-        + found: false (boolean, required)
+    + Attributes (NotFound)
 
 
 ### Client Ping [/clients/{clientId}/tasks/ping]
@@ -367,7 +372,7 @@ Every client must periodically ping with list of active task ids to avoid task G
 
 + Response 409 (application/json)
     + Attributes (Error)
-    
+
 
 ### Headers [/headers]
 
@@ -405,6 +410,18 @@ Every client must periodically ping with list of active task ids to avoid task G
 ### Get [GET]
 + Response 200 (application/json)
     + Attributes (Stream)
+
++ Response 404 (application/json)
+    + Attributes (NotFound)
+
+### Update [POST]
++ Request (application/json)
+    + Attributes
+        + name: `test` (string,required)
+        + tags ([]string,required)
+            - tag1
+
++ Response 204 (application/json)
 
 + Response 404 (application/json)
     + Attributes (NotFound)
@@ -510,6 +527,27 @@ Period can be appended only after all previous periods are closed and its offset
 + Response 409 (application/json)
     + Attributes (Error)
 
+### Representation [/streams/{streamId}/periods/{periodId}/adaptations/{adId}/representations/{reprId}{?offset,duration}]
++ Parameters
+    + streamId: `a4dc7a8f-2cc5-49d9-afef-79c7160d24d2` (string)
+    + periodId: `f47ac10b-58cc-4372-a567-0e02b2c3d479` (string)
+    + adId: 720p (string)
+    + reprId: 512kbps (string)
+    + offset: 0 (Ticks)
+    + duration: 0 (Ticks) - 0 for whole representation
+
+### Download [GET]
+
+Responds with chunked reponse containing header + body as ismv stream 
+
++ Response 200 (application/octet-stream)    
+    + Headers
+    
+            header-bytes: 512
+            
+    + Body
+    
+            <ismv stream>
 
 ### Representation Header [/streams/{streamId}/periods/{periodId}/adaptations/{adId}/representations/{reprId}/header]
 + Parameters
